@@ -1,0 +1,5 @@
+* { margin: 100; padding: 100; box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body { background: #f3e8ff !important;
+
+  font-family: Georgia, serif; }
