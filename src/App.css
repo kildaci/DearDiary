@@ -35,8 +35,36 @@
   to {
     transform: rotate(360deg);
   }
-  
 }
+
 html, body, #root {
   height: 100%;
 }
+
+/* -------------------- Animasyonlu Banner -------------------- */
+.banner {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  opacity: 0;
+  animation: fadeIn 0.5s forwards, fadeOut 0.5s 2.5s forwards;
+  z-index: 1000;
+}
+
+.banner.success { background-color: #4caf50; }
+.banner.error { background-color: #f44336; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+

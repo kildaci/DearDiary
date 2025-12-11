@@ -1,46 +1,75 @@
 import React, { useState } from "react";
+import Landing from "./landing";
 import CuteReactLogin from "./CuteReactLogin";
 import DiaryPage from "./DiaryPage";
+import "./App.css";
 
 function App() {
-  // Giriş yapan kullanıcının verilerini (ID, Username vb.) tutar. 
-  // Giriş yapılmadığında null'dır.
-  const [currentUser, setCurrentUser] = useState(null); 
-  
-  // Login (Giriş) ve Register (Kayıt) modu arasında geçiş yapmak için state.
+  const [currentUser, setCurrentUser] = useState(null);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState(""); // "success" veya "error"
 
-  // Başarılı giriş/kayıt sonrası çağrılır. userData, API'den gelen nesnedir.
   const handleLogin = (userData) => {
-    // userData'nın, API'den { id: ..., username: ... } şeklinde geldiğini varsayıyoruz.
     setCurrentUser(userData);
-  };
-  
-  // Kayıt modunu değiştiren fonksiyon
-  const toggleRegister = () => {
-    setIsRegistering(prev => !prev);
+
+    // Örnek: Kayıt başarılı mesajı
+    if (isRegistering) {
+      setMessage("Kayıt başarılı! Artık günlük sayfanı görebilirsin.");
+      setMessageType("success");
+
+      // 3 saniye sonra mesajı kaldır
+      setTimeout(() => setMessage(null), 3000);
+    }
   };
 
-  // Eğer currentUser null değilse (giriş yapılmışsa) true.
+  const toggleRegister = () => {
+    setIsRegistering((prev) => !prev);
+  };
+
+
+
   const isLoggedIn = currentUser !== null;
-  
-  // Eğer giriş yapılmışsa, kullanıcının ID'sini (küçük 'i' ile id) DiaryPage'e ilet.
   const userId = currentUser ? currentUser.id : null;
 
   return (
-    <>
-      {isLoggedIn ? (
-        // currentUser nesnesinden çekilen ID'yi userId prop'u olarak iletiyoruz.
-        <DiaryPage userId={userId} /> 
-      ) : (
-        // Login bileşenine tüm gerekli bilgileri iletiyoruz.
-        <CuteReactLogin 
+    <div className="App">
+      {/* Banner */}
+      {message && (
+        <div className={`banner ${messageType}`}>
+          {message}
+        </div>
+      )}
+
+      {/* Landing ekranı */}
+      {showLanding && (
+        <Landing
+          onLoginClick={() => {
+            setShowLanding(false);
+            setIsRegistering(false);
+          }}
+          onRegisterClick={() => {
+            setShowLanding(false);
+            setIsRegistering(true);
+          }}
+        />
+      )}
+
+      {/* Login/Register ekranı */}
+      {!showLanding && !isLoggedIn && (
+        <CuteReactLogin
           onLogin={handleLogin}
           isRegistering={isRegistering}
           toggleRegister={toggleRegister}
         />
       )}
-    </>
+
+      {/* Günlük ekranı */}
+      {isLoggedIn && <DiaryPage userId={userId} />}
+      
+
+    </div>
   );
 }
 

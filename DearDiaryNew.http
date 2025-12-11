@@ -1,0 +1,6 @@
+@DearDiaryNew_HostAddress = http://localhost:5272
+
+GET {{DearDiaryNew_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -2,66 +2,65 @@ import React, { useState } from "react";
 import Lottie from "lottie-react";
 import pandaAnimation from "./tinyaPanda.json";
 
-// App.js'ten props olarak giriş yapmış kullanıcının ID'sini (userId) almalıdır.
 export default function DiaryPage({ userId }) { 
   const [diaryText, setDiaryText] = useState("");
   const [showSaved, setShowSaved] = useState(false);
-  const today = new Date().toLocaleDateString();
-  
-  // Sizin API'nizin Journal endpoint'i
-  const API_URL = "http://localhost:5272/api/Journal"; // Lütfen Journal Controller'ınızın adını kontrol edin!
+  const [diaries, setDiaries] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
 
-  console.log("DiaryPage'e Gelen Kullanıcı ID'si:", userId);
+  const today = new Date().toLocaleDateString();
+  const API_URL = "http://localhost:5272/api/Journal";
 
   const handleSave = async () => {
-    // 1. Kullanıcı ID'si yoksa kaydetme (Gereklilik kontrolü)
-    if (!userId) {
-        alert("Günlük kaydı için lütfen önce giriş yapın.");
-        return;
-    }
-    
-    // 2. Günlük içeriği boşsa uyarı ver
-    if (!diaryText.trim()) {
-        alert("Günlük içeriği boş olamaz.");
-        return;
-    }
+    if (!userId) return alert("Günlük kaydı için lütfen önce giriş yapın.");
+    if (!diaryText.trim()) return alert("Günlük içeriği boş olamaz.");
 
     try {
-      // Gönderilecek Journal nesnesini oluştur
       const journalEntry = {
-        // Journal modelinizdeki alan adlarını kullanın (PascalCase: UserId, Content)
         UserId: userId, 
-        JournalDate: new Date().toISOString(), // SQL'e uygun tarih formatı
+        JournalDate: new Date().toISOString(),
         Content: diaryText
       };
       
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(journalEntry)
       });
 
       if (response.ok) {
-        // Başarılı olursa popup göster
         setShowSaved(true);
         setTimeout(() => setShowSaved(false), 2000);
-        console.log("✅ Günlük başarıyla kaydedildi.");
-        
-        // setDiaryText(""); // İsteğe bağlı: Kaydedildikten sonra temizle
-        
+        setDiaryText(""); // opsiyonel: kaydettikten sonra temizle
       } else {
-        // Sunucudan gelen hata mesajını göster
         const errorText = await response.text();
         alert(`Günlük kaydı başarısız! Sunucu hatası: ${errorText}`);
-        console.error("API Kayıt Hatası:", errorText);
       }
     } catch (error) {
-      // Ağ veya CORS hatası
       alert("Sunucuya bağlanılamadı. API'nizin çalıştığından emin olun.");
       console.error("Fetch Hatası:", error);
     }
+  };
+
+  const toggleHistory = async () => {
+    if (!showHistory) {
+      try {
+        const res = await fetch(`${API_URL}/User/${userId}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            setDiaries([]);
+            setShowHistory(true);
+            return;
+          }
+          throw new Error("Geçmiş günlükler alınamadı.");
+        }
+        const data = await res.json();
+        setDiaries(data);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+    setShowHistory(prev => !prev);
   };
 
   return (
@@ -75,12 +74,11 @@ export default function DiaryPage({ userId }) {
       alignItems: "center",
       justifyContent: "flex-start"
     }}>
-      {/* Sağ üst köşe tinyaPanda animasyonu (UYARILARIN SEBEBİ BURAYDI) */}
+      {/* Panda animasyonu */}
       <div style={{ position: "absolute", top: 20, right: 20, width: 350, height: 350 }}>
         <Lottie animationData={pandaAnimation} loop={true} />
       </div>
 
-      {/* Başlık */}
       <h1 style={{
         fontFamily: "'Georgia', serif",
         fontSize: "4rem",
@@ -97,10 +95,8 @@ export default function DiaryPage({ userId }) {
         Dear Diary
       </h1>
 
-      {/* Tarih (UYARILARIN SEBEBİ BURAYDI) */}
       <p style={{ fontSize: "1.2rem", color: "#555", marginBottom: 20 }}>{today}</p>
 
-      {/* Kareli textarea */}
       <textarea
         value={diaryText}
         onChange={(e) => setDiaryText(e.target.value)}
@@ -118,13 +114,12 @@ export default function DiaryPage({ userId }) {
           fontFamily: "'Cursive', sans-serif",
           resize: "none",
           outline: "none",
-          marginBottom: 30
+          marginBottom: 20
         }}
       />
 
-      {/* Kaydet butonu */}
       <button
-        onClick={handleSave} // API çağrısını yapan fonksiyon
+        onClick={handleSave}
         style={{
           padding: "12px 30px",
           borderRadius: 20,
@@ -136,7 +131,7 @@ export default function DiaryPage({ userId }) {
           boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
           transition: "transform 0.2s",
           alignSelf: "center",
-          marginTop: "auto"
+          marginBottom: 20
         }}
         onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
         onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
@@ -144,7 +139,21 @@ export default function DiaryPage({ userId }) {
         Kaydet
       </button>
 
-      {/* Popup mesaj (UYARILARIN SEBEBİ BURAYDI) */}
+      <button
+        onClick={toggleHistory}
+        style={{
+          padding: "10px 25px",
+          borderRadius: 20,
+          border: "none",
+          background: "#7b61ff",
+          color: "#fff",
+          cursor: "pointer",
+          marginBottom: 20
+        }}
+      >
+        {showHistory ? "Geçmişi Kapat" : "Geçmiş Günlüklerim"}
+      </button>
+
       {showSaved && (
         <div style={{
           position: "fixed",
@@ -167,7 +176,23 @@ export default function DiaryPage({ userId }) {
         </div>
       )}
 
-      {/* Animasyon keyframes */}
+      {showHistory && (
+        <div style={{ width: "80%", maxHeight: "400px", overflowY: "auto" }}>
+          {diaries.length === 0 && <p>Henüz geçmiş günlük yok.</p>}
+          {diaries.map(d => (
+            <div key={d.id} style={{
+              background: "#f5f2ff",
+              margin: "10px 0",
+              padding: 15,
+              borderRadius: 10
+            }}>
+              <strong>{new Date(d.journalDate).toLocaleDateString()}</strong>
+              <p>{d.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
       <style>
         {`
           @keyframes popUp {

@@ -1,0 +1,20 @@
+###########################
+# Visual Studio / C# Geçici Dosyaları
+###########################
+
+# VS temporary/build files
+[Dd]ebug/
+[Rr]elease/
+*.obj
+*.exe
+*.pdb
+*.user
+*.config
+*.suo
+*.suo.old
+*.cache
+
+# Visual Studio'nun Gizli Ayar Klasörü (Hata aldığınız klasör)
+.vs/
+**/bin/
+**/obj/
